@@ -140,6 +140,7 @@ stage_in_lapack(parsec_gpu_task_t *gtask,
     parsec_task_t *task = gtask->ec;
     int elem_sz;
     int i;
+   
     for(i = 0; i < task->task_class->nb_flows; i++){
         if(flow_mask & (1U << i)){
             copy_in = task->data[i].data_in;
@@ -156,6 +157,7 @@ stage_in_lapack(parsec_gpu_task_t *gtask,
                                                             cudaMemcpyHostToDevice : cudaMemcpyDeviceToDevice,
                                                     cuda_stream->cuda_stream);
                 PARSEC_CUDA_CHECK_ERROR( "cudaMemcpyAsync ", ret, { return PARSEC_ERROR; } );
+		printf("stage_in_lapack : CASE 1\n");
             }else{
 
 #ifdef CUDA_COPY_2D
@@ -174,6 +176,7 @@ stage_in_lapack(parsec_gpu_task_t *gtask,
                                                       cudaMemcpyHostToDevice,
                                                       cuda_stream->cuda_stream );
                 PARSEC_CUDA_CHECK_ERROR( "cudaMemcpy2DAsync ", ret, { return PARSEC_ERROR; } );
+		printf("stage_in_lapack : CASE 2\n");
 
 
 #else
@@ -191,6 +194,7 @@ stage_in_lapack(parsec_gpu_task_t *gtask,
                                           cudaMemcpyHostToDevice,
                                           gpu_stream->cuda_stream );
                     PARSEC_CUDA_CHECK_ERROR( "cudaMemcpyAsync ", ret, { return PARSEC_ERROR; } );
+		    printf("stage_in_lapack : CASE 3\n");
 
                 }
 #endif
