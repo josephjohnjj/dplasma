@@ -734,6 +734,9 @@ parsec_context_t* setup_parsec(int argc, char **argv, int *iparam)
 #endif
 
     if(verbose > 2) TIME_PRINT(iparam[IPARAM_RANK], ("PaRSEC initialized\n"));
+    
+    remote_dep_mpi_on(ctx);
+
     return ctx;
 }
 

@@ -199,8 +199,7 @@ READ B <- B RING_B(k, n, m%P)                         [ type_remote = %{ return 
 RW   C <- (k == 0)             ? ddescC(m, n)         [ type        = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, TILED); %}
                                                         type_data   = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
        <- (k != 0)             ? C GEMM( m, n, k-1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
-       -> (k == (descA->nt-1)) ? ddescC(m, n)         [ type        = %{ return ADTT_CP(_f_C, ddescC, loc_C, C_SHAPE); %}
-                                                        type_data   = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
+       -> (k == (descA->nt-1)) ? C WRITE_C(m, n)      /* dep OUT: rely on datacopy dtt for sending */
        -> (k != (descA->nt-1)) ? C GEMM( m, n, k+1 )  /* dep OUT: rely on datacopy dtt for sending */
 
 CTL ctla -> (k < (descA->nt-lookQ)) ? ctla RING_A(m, k+lookQ, n%Q)
@@ -269,5 +268,28 @@ BODY
              creal(alpha), m, k, ldam,
                            k, n, ldbk,
              creal(lbeta), m, n, ldcm );
+}
+END
+
+/**************************************************
+ *                       WRITE_C                     *
+ **************************************************/
+WRITE_C(m, n)
+
+// Execution space
+m = 0 .. descC->mt-1
+n = 0 .. descC->nt-1
+
+loc_C = %{ return LOC(descC, m, n); %}
+
+// Parallel partitioning
+: descC(m, n)
+
+RW C <- C GEMM( m, n, descA->nt-1 ) [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
+     -> ddescC(m, n)                [ type        = %{ return ADTT_CP(_f_C, ddescC, loc_C, C_SHAPE); %}
+                                      type_data   = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
+BODY
+{
+     printlog("rank %u -> C(%d,%d)\n", ((parsec_data_collection_t*)descC)->myrank, m, n);
 }
 END

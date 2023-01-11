@@ -123,6 +123,12 @@ dplasma_Zgemm_New_summa(dplasma_enum_t transA, dplasma_enum_t transB,
 
     assert(shape == MAX_SHAPES);
 
+    parsec_dgemm_NN_summa_taskpool_t *taskpool = (parsec_dgemm_NN_summa_taskpool_t *)dgemm_tp;
+    dplasma_add2arena_tile( &taskpool->arenas_datatypes[PARSEC_dgemm_NN_summa_DEFAULT_ADT_IDX],
+                             C->mb*C->nb*sizeof(double),
+                             PARSEC_ARENA_ALIGNMENT_SSE,
+                             parsec_datatype_double_t, C->mb );
+
     (void)opt; //No user-defined options for this algorithm
     return zgemm_tp;
 }
