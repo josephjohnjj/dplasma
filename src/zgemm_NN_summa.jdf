@@ -199,8 +199,8 @@ READ B <- B RING_B(k, n, m%P)                         [ type_remote = %{ return 
 RW   C <- (k == 0)             ? ddescC(m, n)         [ type        = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, TILED); %}
                                                         type_data   = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
        <- (k != 0)             ? C GEMM( m, n, k-1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
-       -> (k == (descA->nt-1)) ? C WRITE_C(m, n)      /* dep OUT: rely on datacopy dtt for sending */
-       -> (k != (descA->nt-1)) ? C GEMM( m, n, k+1 )  /* dep OUT: rely on datacopy dtt for sending */
+       -> (k == (descA->nt-1)) ? C WRITE_C(m, n)      [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
+       -> (k != (descA->nt-1)) ? C GEMM( m, n, k+1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %}]
 
 CTL ctla -> (k < (descA->nt-lookQ)) ? ctla RING_A(m, k+lookQ, n%Q)
 CTL ctlb -> (k < (descA->nt-lookP)) ? ctlb RING_B(k+lookP, n, m%P)
