@@ -217,10 +217,10 @@ loc_C = %{ return LOC(descC, m, n); %}
 // Parameters
 READ A <- A RING_A(m, k, n%Q)                         [ type_remote = %{ return ADTT_DC(ddescA, loc_A, A_SHAPE, TILED); %} ]
 READ B <- B RING_B(k, n, m%P)                         [ type_remote = %{ return ADTT_DC(ddescB, loc_B, B_SHAPE, TILED); %} ]
-RW   C <- (k == 0)             ? C READ_C( m, n )     [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %}]]
+RW   C <- (k == 0)             ? C READ_C( m, n )     [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
        <- (k != 0)             ? C GEMM( m, n, k-1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
        -> (k == (descA->nt-1)) ? C WRITE_C(m, n)      [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
-       -> (k != (descA->nt-1)) ? C GEMM( m, n, k+1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %}]
+       -> (k != (descA->nt-1)) ? C GEMM( m, n, k+1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
 
 CTL ctla -> (k < (descA->nt-lookQ)) ? ctla RING_A(m, k+lookQ, n%Q)
 CTL ctlb -> (k < (descA->nt-lookP)) ? ctlb RING_B(k+lookP, n, m%P)

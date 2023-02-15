@@ -152,6 +152,27 @@ BODY
 }
 END
 
+/**************************************************
+ *                       READ_C                   *
+ **************************************************/
+READ_C(m, n) [profile = off]
+
+m = 0 .. descC->mt-1
+n = 0 .. descC->nt-1
+
+loc_C = %{ return LOC(descC, m, n); %}
+
+: descC(m, n)
+
+READ C <- descC(m, n)        [ type        = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, TILED); %}
+                               type_data   = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
+       -> C GEMM( m, n, 0 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %}]
+BODY
+{
+     printlog("rank %u <- C(%d,%d)\n", ((parsec_data_collection_t*)descC)->myrank, m, n);
+}
+END
+
 RING_B(n, k, p)  [profile = off]
 
 n = 0 .. descB->mt-1
@@ -196,8 +217,7 @@ loc_C = %{ return LOC(descC, m, n); %}
 // Parameters
 READ A <- A RING_A(m, k, n%Q)                         [ type_remote = %{ return ADTT_DC(ddescA, loc_A, A_SHAPE, TILED); %} ]
 READ B <- B RING_B(n, k, m%P)                         [ type_remote = %{ return ADTT_DC(ddescB, loc_B, B_SHAPE, TILED); %} ]
-RW   C <- (k == 0)             ? ddescC(m, n)         [ type        = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, TILED); %}
-                                                        type_data   = %{ return ADTT_READ(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
+RW   C <- (k == 0)             ? C READ_C( m, n )     [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
        <- (k != 0)             ? C GEMM( m, n, k-1 )  [ type_remote = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, TILED); %} ]
        -> (k == (descA->nt-1)) ? ddescC(m, n)         [ type        = %{ return ADTT_CP(_f_C, ddescC, loc_C, C_SHAPE); %}
                                                         type_data   = %{ return ADTT_DC(ddescC, loc_C, C_SHAPE, LAPACK); %} ]
