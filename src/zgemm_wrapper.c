@@ -347,6 +347,14 @@ dplasma_Zgemm_New_gpu( dplasma_enum_t transA, dplasma_enum_t transB,
                                      A, B, C, b, c, d, p, q, look_ahead,
                                      nbgpu, dev_index);
 
+        parsec_datatype_t block;
+        int size = A->nb * A->mb;
+        
+        parsec_type_create_contiguous(size, parsec_datatype_double_complex_t, &block);
+        parsec_arena_datatype_construct( &tp->arenas_datatypes[PARSEC_dgemm_NN_gpu_DEFAULT_ADT_IDX],
+                                 size * parsec_datadist_getsizeoftype(PARSEC_MATRIX_COMPLEX_DOUBLE),
+                                 PARSEC_ARENA_ALIGNMENT_SSE, block);
+
         u = C->super.myrank / q;
         v = C->super.myrank % q;
 
