@@ -657,7 +657,8 @@ parsec_context_t* setup_parsec(int argc, char **argv, int *iparam)
     {
         int requested = iparam[IPARAM_THREAD_MT]? MPI_THREAD_MULTIPLE: MPI_THREAD_SERIALIZED;
         int provided;
-        MPI_Init_thread(&argc, &argv, requested, &provided);
+       // MPI_Init_thread(&argc, &argv, requested, &provided);
+       MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
         if( requested > provided ) {
             fprintf(stderr, "#XXXXX User requested %s but the implementation returned a lower thread\n", requested==MPI_THREAD_MULTIPLE? "MPI_THREAD_MULTIPLE": "MPI_THREAD_SERIALIZED");
             exit(2);
