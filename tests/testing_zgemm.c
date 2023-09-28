@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
     PASTE_CODE_ALLOCATE_MATRIX(dcC, 1,
         parsec_matrix_block_cyclic, (&dcC, PARSEC_MATRIX_COMPLEX_DOUBLE, PARSEC_MATRIX_TILE,
                                rank, MB, NB, LDC, N, 0, 0,
-                               M, N, P, nodes/P, KP, KQ, IP, JQ));
+                               M, N, P, Q, KP, KQ, IP, JQ));
 
     /* initializing matrix structure */
     if(!check)
