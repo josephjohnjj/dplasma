@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
     PASTE_CODE_ALLOCATE_MATRIX(dcA, 1,
         parsec_matrix_sym_block_cyclic, (&dcA, PARSEC_MATRIX_COMPLEX_DOUBLE,
                                    rank, MB, NB, LDA, N, 0, 0,
-                                   N, N, P, nodes/P, uplo));
+                                   N, N, P, Q, uplo));
     int t;
     for(t = 0; t < nruns; t++) {
         /* matrix (re)generation */
