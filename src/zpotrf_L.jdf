@@ -416,7 +416,7 @@ READ C <- descA(m, n)        [ type        = %{ return ADTT_READ(ddescA, loc_C, 
        -> C potrf_zgemm( m, n, 0 )  [ type_remote = %{ return ADTT_DC(ddescA, loc_C, DEFAULT, TILED); %} ]
 BODY
 {
-     printlog("rank %u <- C(%d,%d)\n", ((parsec_data_collection_t*)descC)->myrank, m, n);
+     printlog("rank %u <- A(%d,%d)\n", ((parsec_data_collection_t*)descA)->myrank, m, n);
 }
 END
 
