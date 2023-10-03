@@ -399,6 +399,28 @@ BODY
 END
 
 /**************************************************
+ *                       READ_C                   *
+ **************************************************/
+READ_C(m, n) [profile = off]
+
+// Execution space
+m = 2 .. descA->mt-1
+n = 1 .. m-1
+
+loc_C = %{ return LOC(descA, m, n); %}
+
+: descA(m, n)
+
+READ C <- descA(m, n)        [ type        = %{ return ADTT_READ(ddescA, loc_C, DEFAULT, TILED); %}
+                               type_data   = %{ return ADTT_READ(ddescA, loc_C, DEFAULT, LAPACK); %} ]
+       -> C potrf_zgemm( m, n, 0 )  [ type_remote = %{ return ADTT_DC(ddescA, loc_C, DEFAULT, TILED); %} ]
+BODY
+{
+     printlog("rank %u <- C(%d,%d)\n", ((parsec_data_collection_t*)descC)->myrank, m, n);
+}
+END
+
+/**************************************************
  *               potrf_zgemm                      *
  **************************************************/
 // Name
@@ -419,8 +441,7 @@ loc_C = %{ return LOC(descA, m, n); %}
 // Parameters
 READ  A <- C potrf_ztrsm(m, k)                   [ type_remote = %{ return ADTT_DC(ddescA, loc_A, DEFAULT, TILED); %} ]
 READ  B <- C potrf_ztrsm(n, k)                   [ type_remote = %{ return ADTT_DC(ddescA, loc_B, DEFAULT, TILED); %} ]
-RW    C <- (k == 0)   ? ddescA(m, n)             [ type        = %{ return ADTT_READ(ddescA, loc_C, DEFAULT, TILED); %}
-                                                   type_data   = %{ return ADTT_READ(ddescA, loc_C, DEFAULT, LAPACK); %} ]
+RW    C <- (k == 0)   ? C READ_C(m, n)           [ type_remote = %{ return ADTT_DC(ddescA, loc_C, DEFAULT, TILED); %} ]
         <- (k != 0)   ? C potrf_zgemm(m, n, k-1) [ type_remote = %{ return ADTT_DC(ddescA, loc_C, DEFAULT, TILED); %} ]
         -> (n == k+1) ? C potrf_ztrsm(m, n) : C potrf_zgemm(m, n, k+1) /* dep OUT: rely on datacopy dtt for sending */
 
